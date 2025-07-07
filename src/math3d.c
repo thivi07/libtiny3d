@@ -1,10 +1,12 @@
-#include "math3d2.h"
-
+#include "math3d.h"
+#include <math.h>
+#include <stdint.h>
+#include <assert.h>
 
 // Vector functions //
 
 vec3_t vec3_from_spherical(float r, float theta, float phi) {
-    vec3_t v;
+    vec3_t v = {0};  // Initialize all fields to zero
     v.r = r;
     v.theta = theta;
     v.phi = phi;
@@ -19,7 +21,8 @@ vec3_t vec3_from_spherical(float r, float theta, float phi) {
 
 vec3_t vec3_normalize_fast(vec3_t v) {
     float len_sq = v.x * v.x + v.y * v.y + v.z * v.z;
-    float inv_len = 1.0f / sqrtf(len_sq);
+    // Add epsilon to prevent division by zero
+    float inv_len = 1.0f / sqrtf(len_sq + 1e-8f);
     v.x *= inv_len;
     v.y *= inv_len;
     v.z *= inv_len;
@@ -31,23 +34,42 @@ vec3_t vec3_slerp(vec3_t a, vec3_t b, float t) {
     a = vec3_normalize_fast(a);
     b = vec3_normalize_fast(b);
 
-    // Calculate dot product
+    // Calculate dot product with clamping
     float dot = a.x * b.x + a.y * b.y + a.z * b.z;
     dot = fmaxf(fminf(dot, 1.0f), -1.0f);
 
-    float theta = acosf(dot) * t;
+    // Handle nearly parallel vectors
+    if (fabsf(dot) > 0.9995f) {
+        // Fall back to linear interpolation
+        vec3_t result = {
+            .x = a.x + t * (b.x - a.x),
+            .y = a.y + t * (b.y - a.y),
+            .z = a.z + t * (b.z - a.z),
+            .r = 0.0f,
+            .theta = 0.0f,
+            .phi = 0.0f
+        };
+        return vec3_normalize_fast(result);
+    }
 
+    float theta = acosf(dot) * t;
     vec3_t rel = {
-        b.x - a.x * dot,
-        b.y - a.y * dot,
-        b.z - a.z * dot
+        .x = b.x - a.x * dot,
+        .y = b.y - a.y * dot,
+        .z = b.z - a.z * dot,
+        .r = 0.0f,
+        .theta = 0.0f,
+        .phi = 0.0f
     };
     rel = vec3_normalize_fast(rel);
 
     vec3_t result = {
-        a.x * cosf(theta) + rel.x * sinf(theta),
-        a.y * cosf(theta) + rel.y * sinf(theta),
-        a.z * cosf(theta) + rel.z * sinf(theta)
+        .x = a.x * cosf(theta) + rel.x * sinf(theta),
+        .y = a.y * cosf(theta) + rel.y * sinf(theta),
+        .z = a.z * cosf(theta) + rel.z * sinf(theta),
+        .r = 0.0f,
+        .theta = 0.0f,
+        .phi = 0.0f
     };
     return result;
 }
@@ -131,11 +153,18 @@ vec3_t mat4_transform_vec3(mat4_t mat, vec3_t v) {
     float tz = mat.m[2] * x + mat.m[6] * y + mat.m[10] * z + mat.m[14];
     float tw = mat.m[3] * x + mat.m[7] * y + mat.m[11] * z + mat.m[15];
 
-    if (tw != 0.0f) {
+    if (tw != 0.0f && tw != 1.0f) {
         tx /= tw; ty /= tw; tz /= tw;
     }
 
-    vec3_t result = {tx, ty, tz};
+    vec3_t result = {
+        .x = tx,
+        .y = ty,
+        .z = tz,
+        .r = 0.0f,
+        .theta = 0.0f,
+        .phi = 0.0f
+    };
     return result;
 }
 

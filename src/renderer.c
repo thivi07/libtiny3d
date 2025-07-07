@@ -2,6 +2,7 @@
 #include "renderer.h"
 #include "canvas.h"
 #include <math.h>
+#include<stdlib.h>
 
 // Projects a 3D vertex through model → view → projection transforms
 vec3_t project_vertex(vec3_t vertex, mat4_t model, mat4_t view, mat4_t projection) {
@@ -24,6 +25,7 @@ int clip_to_circular_viewport(canvas_t* canvas, int x, int y) {
 // Draws a wireframe using projected 3D vertices
 void render_wireframe(canvas_t* canvas, vec3_t* vertices, int vertex_count, int (*edges)[2], int edge_count,
                       mat4_t model, mat4_t view, mat4_t projection) {
+    (void)vertex_count;
     for (int i = 0; i < edge_count; ++i) {
         vec3_t p0 = project_vertex(vertices[edges[i][0]], model, view, projection);
         vec3_t p1 = project_vertex(vertices[edges[i][1]], model, view, projection);

@@ -1,6 +1,7 @@
 #ifndef MATH3D_H
 #define MATH3D_H
 #include <math.h>
+#include "soccerball.h"
 
 
 // 3D Vector (Cartesian + Spherical)
@@ -9,6 +10,8 @@ typedef struct {
     float x, y, z;         // Cartesian
     float r, theta, phi;   // Spherical: r = radius(distance from origin), theta = horizontal angle, vertical angle (radians)
 } vec3_t;
+
+
 
 // Vector operations
 vec3_t vec3_from_spherical(float r, float theta, float phi);
@@ -32,8 +35,6 @@ mat4_t mat4_frustum_asymmetric(float left, float right, float bottom, float top,
 mat4_t mat4_multiply(mat4_t A, mat4_t B);   // Matrix multiply: result = A * B
 
 vec3_t mat4_transform_vec3(mat4_t mat, vec3_t v);   // Transform vector by matrix
-
-void generate_soccer_ball(vec3_t** out_vertices, int* out_vertex_count, int (**out_edges)[2], int* out_edge_count);
 
 #endif
 

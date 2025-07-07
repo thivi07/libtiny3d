@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include "math3d.h"
 #include <math.h>
+#ifndef SOCCERBALL_H
+#define SOCCERBALL_H
 
 // Golden ratio constants
 #define C0 0.8090169943749474f    // (1 + sqrt(5)) / 4
@@ -10,23 +12,25 @@
 #define C3 2.118033988749895f     // (2 + sqrt(5)) / 2
 #define C4 2.4270509831248424f    // 3 * (1 + sqrt(5)) / 4
 
+
+
 // 60 vertices of truncated icosahedron
 static const vec3_t raw_vertices[60] = {
-    {  0.5f,  0.0f,  C4 }, {  0.5f,  0.0f, -C4 }, { -0.5f,  0.0f,  C4 }, { -0.5f,  0.0f, -C4 },
-    {  C4,  0.5f,  0.0f }, {  C4, -0.5f,  0.0f }, { -C4,  0.5f,  0.0f }, { -C4, -0.5f,  0.0f },
-    { 0.0f,  C4,  0.5f }, { 0.0f,  C4, -0.5f }, { 0.0f, -C4,  0.5f }, { 0.0f, -C4, -0.5f },
-    { 1.0f,  C0,  C3 }, { 1.0f,  C0, -C3 }, { 1.0f, -C0,  C3 }, { 1.0f, -C0, -C3 },
-    { -1.0f,  C0,  C3 }, { -1.0f,  C0, -C3 }, { -1.0f, -C0,  C3 }, { -1.0f, -C0, -C3 },
-    {  C3,  1.0f,  C0 }, {  C3,  1.0f, -C0 }, {  C3, -1.0f,  C0 }, {  C3, -1.0f, -C0 },
-    { -C3,  1.0f,  C0 }, { -C3,  1.0f, -C0 }, { -C3, -1.0f,  C0 }, { -C3, -1.0f, -C0 },
-    {  C0,  C3,  1.0f }, {  C0,  C3, -1.0f }, {  C0, -C3,  1.0f }, {  C0, -C3, -1.0f },
-    { -C0,  C3,  1.0f }, { -C0,  C3, -1.0f }, { -C0, -C3,  1.0f }, { -C0, -C3, -1.0f },
-    { 0.5f,  C1,  C2 }, { 0.5f,  C1, -C2 }, { 0.5f, -C1,  C2 }, { 0.5f, -C1, -C2 },
-    { -0.5f,  C1,  C2 }, { -0.5f,  C1, -C2 }, { -0.5f, -C1,  C2 }, { -0.5f, -C1, -C2 },
-    {  C2,  0.5f,  C1 }, {  C2,  0.5f, -C1 }, {  C2, -0.5f,  C1 }, {  C2, -0.5f, -C1 },
-    { -C2,  0.5f,  C1 }, { -C2,  0.5f, -C1 }, { -C2, -0.5f,  C1 }, { -C2, -0.5f, -C1 },
-    {  C1,  C2,  0.5f }, {  C1,  C2, -0.5f }, {  C1, -C2,  0.5f }, {  C1, -C2, -0.5f },
-    { -C1,  C2,  0.5f }, { -C1,  C2, -0.5f }, { -C1, -C2,  0.5f }, { -C1, -C2, -0.5f }
+    {  0.5f,  0.0f,  C4, 0,0,0 }, {  0.5f,  0.0f, -C4 , 0,0,0}, { -0.5f,  0.0f,  C4 ,0,0,0}, { -0.5f,  0.0f, -C4 ,0,0,0},
+    {  C4,  0.5f,  0.0f, 0,0,0 }, {  C4, -0.5f,  0.0f, 0,0,0 }, { -C4,  0.5f,  0.0f, 0,0,0}, { -C4, -0.5f,  0.0f ,0,0,0},
+    {  0.0f,  C4,  0.5f ,0,0,0 },  { 0.0f,  C4, -0.5f ,0,0,0 },  { 0.0f, -C4,  0.5f ,0,0,0 }, { 0.0f, -C4, -0.5f ,0,0,0},
+    {  1.0f,  C0,  C3   ,0,0,0 },    { 1.0f,  C0, -C3 ,0,0,0}, { 1.0f, -C0,  C3,0,0,0 }, { 1.0f, -C0, -C3,0,0,0 },
+    { -1.0f,  C0,  C3   ,0,0,0 }, { -1.0f,  C0, -C3 ,0,0,0}, { -1.0f, -C0,  C3 ,0,0,0}, { -1.0f, -C0, -C3 ,0,0,0},
+    {  C3,  1.0f,  C0   ,0,0,0 }, {  C3,  1.0f, -C0 ,0,0,0}, {  C3, -1.0f,  C0,0,0,0 }, {  C3, -1.0f, -C0,0,0,0 },
+    { -C3,  1.0f,  C0   ,0,0,0 }, { -C3,  1.0f, -C0,0,0,0 }, { -C3, -1.0f,  C0,0,0,0 }, { -C3, -1.0f, -C0 ,0,0,0},
+    {  C0,  C3,  1.0f   ,0,0,0 }, {  C0,  C3, -1.0f,0,0,0 }, {  C0, -C3,  1.0f,0,0,0 }, {  C0, -C3, -1.0f,0,0,0 },
+    { -C0,  C3,  1.0f   ,0,0,0 }, { -C0,  C3, -1.0f ,0,0,0}, { -C0, -C3,  1.0f,0,0,0 }, { -C0, -C3, -1.0f,0,0,0 },
+    {  0.5f,  C1,  C2   ,0,0,0 }, { 0.5f,  C1, -C2 ,0,0,0}, { 0.5f, -C1,  C2,0,0,0 }, { 0.5f, -C1, -C2,0,0,0 },
+    { -0.5f,  C1,  C2   ,0,0,0 }, { -0.5f,  C1, -C2,0,0,0 }, { -0.5f, -C1,  C2,0,0,0 }, { -0.5f, -C1, -C2 ,0,0,0},
+    {  C2,  0.5f,  C1   ,0,0,0 }, {  C2,  0.5f, -C1 ,0,0,0}, {  C2, -0.5f,  C1,0,0,0 }, {  C2, -0.5f, -C1,0,0,0 },
+    { -C2,  0.5f,  C1   ,0,0,0 }, { -C2,  0.5f, -C1 ,0,0,0}, { -C2, -0.5f,  C1 ,0,0,0}, { -C2, -0.5f, -C1 ,0,0,0},
+    {  C1,  C2,  0.5f   ,0,0,0 }, {  C1,  C2, -0.5f,0,0,0 }, {  C1, -C2,  0.5f,0,0,0 }, {  C1, -C2, -0.5f,0,0,0 },
+    { -C1,  C2,  0.5f   ,0,0,0 }, { -C1,  C2, -0.5f,0,0,0 }, { -C1, -C2,  0.5f,0,0,0 }, { -C1, -C2, -0.5f,0,0,0 }
 };
 
 // 32 faces defined by 5 or 6 vertices (but we only need the edges)
@@ -48,28 +52,55 @@ static const int faces[][6] = {
     { 8, 32, 40, 36, 28, -1}, { 9, 29, 37, 41, 33, -1},
     {10, 30, 38, 42, 34, -1}, {11, 35, 43, 39, 31, -1}
 };
+void generate_soccer_ball(vec3_t** out_vertices, int* out_vertex_count, int (**out_edges)[2], int* out_edge_count){
 
-void generate_soccer_ball(vec3_t** out_vertices, int* out_vertex_count, int (**out_edges)[2], int* out_edge_count) {
-    int vertex_count = 60;
+    // Check output pointers
+    if (!out_vertices || !out_vertex_count || !out_edges || !out_edge_count) {
+        return;
+    }
+
+    const int vertex_count = 60;
 
     // Normalize all vertices
     vec3_t* v_copy = malloc(sizeof(vec3_t) * vertex_count);
-    for (int i = 0; i < vertex_count; ++i)
+    if (!v_copy) {
+        *out_vertex_count = 0;
+        *out_edge_count = 0;
+        return;
+    }
+
+    for (int i = 0; i < vertex_count; ++i) {
         v_copy[i] = vec3_normalize_fast(raw_vertices[i]);
+    }
 
     // Collect all unique edges from faces
-    int edge_flags[60][60] = {0}; // avoid duplicates
-    int max_edges = 180;          // generous allocation
+    int edge_flags[60][60] = {0};
+    const int max_edges = 180;
     int (*e_copy)[2] = malloc(sizeof(int[2]) * max_edges);
-    int edge_count = 0;
+    if (!e_copy) {
+        free(v_copy);
+        *out_vertex_count = 0;
+        *out_edge_count = 0;
+        return;
+    }
 
-    for (int f = 0; f < sizeof(faces)/sizeof(faces[0]); ++f) {
+    int edge_count = 0;
+    const int face_count = sizeof(faces)/sizeof(faces[0]);
+
+    for (int f = 0; f < face_count; ++f) {
         for (int i = 0; i < 6; ++i) {
             int a = faces[f][i];
             int b = faces[f][(i + 1) % 6];
             if (a == -1 || b == -1) break;
 
             if (!edge_flags[a][b] && !edge_flags[b][a]) {
+                if (edge_count >= max_edges) {
+                    free(v_copy);
+                    free(e_copy);
+                    *out_vertex_count = 0;
+                    *out_edge_count = 0;
+                    return;
+                }
                 e_copy[edge_count][0] = a;
                 e_copy[edge_count][1] = b;
                 edge_flags[a][b] = edge_flags[b][a] = 1;
@@ -83,3 +114,4 @@ void generate_soccer_ball(vec3_t** out_vertices, int* out_vertex_count, int (**o
     *out_edges = e_copy;
     *out_edge_count = edge_count;
 }
+#endif

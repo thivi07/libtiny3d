@@ -1,9 +1,12 @@
 #include "canvas.h"
+#include "math3d.h"
+#include "renderer.h"
+#include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
-#ifndef MATH3D_H
-#define MATH3D_H
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
+
 
 
 int main() {
@@ -32,10 +35,9 @@ int main() {
     
     // Clean up
     canvas_destroy(canvas);
-    return 0;
 
     // Soccer Ball Rendering //
-    int width=400, height=400
+    int width=400, height=400;
     canvas_t* soccer_canvas = canvas_create(width, height);
     if (!soccer_canvas) {
         fprintf(stderr, "Failed to create soccer canvas\n");
@@ -63,21 +65,23 @@ int main() {
         float angle = frame * (2.0f * M_PI / 60);  // One full rotation
         mat4_t soccer_model = mat4_rotate_xyz(0.0f, angle, 0.0f);  // Y-axis rotation
 
-        canvas_t* frame_canvas = create_canvas(width, height);
+        canvas_t* frame_canvas = canvas_create(width, height);
         render_wireframe(frame_canvas, soccer_vertices, soccer_vertex_count,
                         soccer_edges, soccer_edge_count, soccer_model, soccer_view, soccer_proj);
 
         sprintf(filename, "soccer_%03d.pgm", frame);
-        canvas_save(frame_canvas, filename);
-        canvas_free(frame_canvas);
+        canvas_save_ppm(frame_canvas, filename);
+        canvas_destroy(frame_canvas);
     }
-    canvas_save(soccer_canvas, "soccer.pgm");
+    canvas_save_ppm(soccer_canvas, "soccer.pgm");
     printf("Soccer ball saved to soccer.pgm\n");
 
     free(soccer_vertices);
     free(soccer_edges);
-    canvas_free(soccer_canvas);
+    canvas_destroy(soccer_canvas);
 
 
     return 0;
 }
+
+#endif

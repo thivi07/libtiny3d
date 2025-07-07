@@ -1,55 +1,40 @@
+#include <stdio.h>
 #include "renderer.h"
 #include "canvas.h"
-#include "math3d.h"
 #include <math.h>
 
-// Projects a 3D vertex through all transformations
-vec3_t project_vertex(vec3_t vertex, mat4_t mvp, int screen_width, int screen_height) {
-    vec4_t v = {vertex.x, vertex.y, vertex.z, 1.0f};
-    vec4_t transformed = mat4_mul_vec4(mvp, v);
-    
-    // Perspective divide
-    if (transformed.w != 0.0f) {
-        transformed.x /= transformed.w;
-        transformed.y /= transformed.w;
-        transformed.z /= transformed.w;
-    }
-
-    // Convert to screen coordinates
-    vec3_t screen;
-    screen.x = (transformed.x * 0.5f + 0.5f) * screen_width;
-    screen.y = (1.0f - (transformed.y * 0.5f + 0.5f)) * screen_height; // Flip Y
-    screen.z = transformed.z;
-    return screen;
+// Projects a 3D vertex through model → view → projection transforms
+vec3_t project_vertex(vec3_t vertex, mat4_t model, mat4_t view, mat4_t projection) {
+    vec3_t world = mat4_transform_vec3(model, vertex);
+    vec3_t camera = mat4_transform_vec3(view, world);
+    vec3_t projected = mat4_transform_vec3(projection, camera);
+    return projected;
 }
 
-// Clips point to a circular viewport
-int clip_to_circular_viewport(canvas_t* canvas, float x, float y) {
-    float cx = canvas->width / 2.0f;
-    float cy = canvas->height / 2.0f;
-    float dx = x - cx;
-    float dy = y - cy;
-    float dist_sq = dx * dx + dy * dy;
-    float radius = (canvas->width < canvas->height ? canvas->width : canvas->height) / 2.0f;
-    return dist_sq <= radius * radius;
+// Clips a pixel to a circular viewport at canvas center
+int clip_to_circular_viewport(canvas_t* canvas, int x, int y) {
+    int cx = canvas->width / 2;
+    int cy = canvas->height / 2;
+    int radius = (canvas->width < canvas->height ? canvas->width : canvas->height) / 2;
+    int dx = x - cx;
+    int dy = y - cy;
+    return (dx * dx + dy * dy <= radius * radius);
 }
 
-// Render wireframe from list of vertices and edge indices
-void render_wireframe(canvas_t* canvas, vec3_t* vertices, int num_vertices, int (*edges)[2], int num_edges, mat4_t mvp) {
-    vec3_t projected[256]; // max 256 verts
-    for (int i = 0; i < num_vertices; i++) {
-        projected[i] = project_vertex(vertices[i], mvp, canvas->width, canvas->height);
-    }
+// Draws a wireframe using projected 3D vertices
+void render_wireframe(canvas_t* canvas, vec3_t* vertices, int vertex_count, int (*edges)[2], int edge_count,
+                      mat4_t model, mat4_t view, mat4_t projection) {
+    for (int i = 0; i < edge_count; ++i) {
+        vec3_t p0 = project_vertex(vertices[edges[i][0]], model, view, projection);
+        vec3_t p1 = project_vertex(vertices[edges[i][1]], model, view, projection);
 
-    for (int i = 0; i < num_edges; i++) {
-        vec3_t a = projected[edges[i][0]];
-        vec3_t b = projected[edges[i][1]];
+        int x0 = (int)((p0.x + 1.0f) * 0.5f * canvas->width);
+        int y0 = (int)((1.0f - (p0.y + 1.0f) * 0.5f) * canvas->height);
+        int x1 = (int)((p1.x + 1.0f) * 0.5f * canvas->width);
+        int y1 = (int)((1.0f - (p1.y + 1.0f) * 0.5f) * canvas->height);
 
-        // Simple Z-sort: skip if behind
-        if (a.z < -1.0f || a.z > 1.0f || b.z < -1.0f || b.z > 1.0f) continue;
-
-        if (clip_to_circular_viewport(canvas, a.x, a.y) && clip_to_circular_viewport(canvas, b.x, b.y)) {
-            draw_line_f(canvas, a.x, a.y, b.x, b.y, 1.0f);
+        if (clip_to_circular_viewport(canvas, x0, y0) || clip_to_circular_viewport(canvas, x1, y1)) {
+            draw_line_f(canvas, x0, y0, x1, y1, 1.0f); // Draw white line
         }
     }
 }

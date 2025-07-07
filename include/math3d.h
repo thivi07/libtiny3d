@@ -33,5 +33,7 @@ mat4_t mat4_multiply(mat4_t A, mat4_t B);   // Matrix multiply: result = A * B
 
 vec3_t mat4_transform_vec3(mat4_t mat, vec3_t v);   // Transform vector by matrix
 
+void generate_soccer_ball(vec3_t** out_vertices, int* out_vertex_count, int (**out_edges)[2], int* out_edge_count);
+
 #endif
 

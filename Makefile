@@ -1,42 +1,67 @@
+# Compiler and flags
 CC = gcc
-CFLAGS = -Wall -Wextra -O3 -std=c99 -Iinclude
+CFLAGS = -Iinclude -Wall -Wextra -std=c99
 LDFLAGS = -lm
 
-BUILD_DIR = build
-SRC_DIR = src
-TESTS_DIR = tests
+# Source files
+CANVAS_SRC = src/canvas.c
+MATH_SRC = src/math3d.c
+RENDER_SRC = src/renderer.c
+SOCCERBALL_SRC = src/soccerball.c
 
-TEST_SRC = $(TESTS_DIR)/test_math.c
-MATH_SRC = $(SRC_DIR)/math3d.c
-CANVAS_SRC = $(SRC_DIR)/canvas.c
+# Demos and tests
+MAIN_DEMO = demo/main.c
+MATH_DEMO = tests/test_math.c
+RENDER_DEMO = demo/render_main.c
 
-TEST_OBJ = $(BUILD_DIR)/test_math.o
-MATH_OBJ = $(BUILD_DIR)/math3d.o
-CANVAS_OBJ = $(BUILD_DIR)/canvas.o
+# Executables
+MAIN_OUT = main_demo
+MATH_OUT = test_math
+RENDER_OUT = render_demo
 
-TEST_EXEC = $(TESTS_DIR)/test_math2
+# Phony targets
+.PHONY: all clean run_main run_math run_render frames gif
 
-.PHONY: all clean run
+# Default target
+all: $(MAIN_OUT) $(MATH_OUT) $(RENDER_OUT)
 
-all: $(TEST_EXEC)
+# Build final soccer ball animation generator
+$(MAIN_OUT): $(CANVAS_SRC) $(MATH_SRC) $(RENDER_SRC) $(SOCCERBALL_SRC) $(MAIN_DEMO)
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
-$(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)
+# Build math test
+$(MATH_OUT): $(MATH_SRC) $(MATH_DEMO)
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
-$(TEST_OBJ): $(TEST_SRC) | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
+# Build renderer demo (if used)
+$(RENDER_OUT): $(CANVAS_SRC) $(MATH_SRC) $(RENDER_SRC) $(RENDER_DEMO)
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
-$(MATH_OBJ): $(MATH_SRC) | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
+# Run animation generator (generates .pgm frames)
+run_main: $(MAIN_OUT)
+	./$(MAIN_OUT)
 
-$(CANVAS_OBJ): $(CANVAS_SRC) | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
+# Shortcut to generate animation frames
+frames: run_main
 
-$(TEST_EXEC): $(TEST_OBJ) $(MATH_OBJ) $(CANVAS_OBJ)
-	$(CC) $^ -o $@ $(LDFLAGS)
+# Collect all generated frame files matching pattern
+PGM_FRAMES := $(wildcard soccer_*.pgm)
 
-run: all
-	./$(TEST_EXEC)
+# Target to create the animated GIF from frames
+soccer_ball.gif: $(PGM_FRAMES)
+	convert -delay 5 -loop 0 soccer_*.pgm soccer_ball.gif
 
+# Shortcut to generate frames and create GIF
+gif: frames soccer_ball.gif
+
+# Run math test
+run_math: $(MATH_OUT)
+	./$(MATH_OUT)
+
+# Run renderer demo
+run_render: $(RENDER_OUT)
+	./$(RENDER_OUT)
+
+# Clean generated files
 clean:
-	rm -rf $(BUILD_DIR)/*.o $(TEST_EXEC)
+	rm -f $(MAIN_OUT) $(MATH_OUT) $(RENDER_OUT) *.pgm soccer_ball.gif
